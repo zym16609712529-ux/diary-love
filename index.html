@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侣云日记 💗（稳定保存版）</title>
+    <style>
+        body,html{ margin:0;height:100%;overflow:hidden; background:url('a1.jpg') center/cover; cursor:url('strawberry.cur'),auto; background-color: #fff5f7; }
+        #video{ position:fixed; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index: 100; }
+        #video video{ position:absolute; width:100%; height:100%; object-fit:cover; z-index:1; }
+        .btn{ width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.3); backdrop-filter:blur(10px); display:flex; justify-content:center; align-items:center; font-size:30px; color:#fff; cursor:pointer; z-index:2; border: 2px solid #fff; transition: 0.3s; }
+        .btn:hover{ transform: scale(1.1); background: rgba(255,255,255,0.5); }
+        #app{ display:none; height:100vh; justify-content:center; align-items:center; }
+        #flipbook{ width:800px; height:500px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .page{ background:url('zhizhang.jpg') center/cover; background-color: #fff; }
+        /* 确保输入框在最上层且高度足够 */
+        textarea{ width:100% !important; height:100% !important; border:none; outline:none; padding:40px; font-size:18px; background:transparent; resize:none; z-index:1000; position:relative; line-height: 1.6; color: #444; box-sizing: border-box; display: block; }
+        .hard{ background:url('kawai.jpg') center/cover; background-color: #ffb6c1; color:#fff; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight: bold; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+<audio id="bg-music" loop><source src="my_music.mp3"></audio>
+
+<div id="video">
+    <video autoplay muted loop><source src="my_video.mp4"></video>
+    <div class="btn" onclick="start()">💗</div>
+</div>
+
+<div id="app">
+    <div id="flipbook">
+        <div class="hard">我们的云日记 💗</div>
+        <div class="page"><textarea data-id="p1" placeholder="第一页：写下此刻的想法..."></textarea></div>
+        <div class="page"><textarea data-id="p2" placeholder="第二页：今天发生了什么？"></textarea></div>
+        <div class="page"><textarea data-id="p3" placeholder="第三页：想对TA说的话..."></textarea></div>
+        <div class="page"><textarea data-id="p4" placeholder="第四页：未来的约定..."></textarea></div>
+        <div class="hard">未完待续 ✨</div>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/turn.js/3/turn.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+// 1. 配置（地址末尾补全斜杠）
+const firebaseConfig = {
+    apiKey: "AIzaSyCo3wv79Mo47-rYcOuKe7ieAHnNbCwPMVU",
+    authDomain: "rijiben.firebaseapp.com",
+    databaseURL: "https://rijiben-default-rtdb.firebaseio.com/", 
+    projectId: "rijiben",
+    storageBucket: "rijiben.firebasestorage.app",
+    messagingSenderId: "958054260229",
+    appId: "1:958054260229:web:65c1691f0328f5c655066c"
+};
+
+// 初始化校验
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+// 2. 开启页面
+function start(){
+    const music = document.getElementById('bg-music');
+    music.play().catch(()=>{});
+
+    document.getElementById('video').style.display='none';
+    document.getElementById('app').style.display='flex';
+
+    // 先展示界面，再初始化 turn.js
+    setTimeout(()=>{
+        $('#flipbook').turn({
+            width: 800,
+            height: 500,
+            autoCenter: true,
+            elevation: 50,
+            gradients: true
+        });
+        // 界面稳定后启动同步
+        initSync();
+    }, 300);
+}
+
+// 3. 核心保存逻辑（增强版）
+function initSync(){
+    console.log("云端同步尝试启动...");
+    
+    $('textarea').each(function(){
+        const el = this;
+        const pageId = $(this).attr('data-id'); // 改用 attr 获取更稳
+        let timer = null;
+
+        // 【拉取】
+        db.ref('diary/' + pageId).on('value', snap => {
+            const val = snap.val() || "";
+            // 如果没在输入，同步云端
+            if (document.activeElement !== el) {
+                el.value = val;
+            }
+        }, err => {
+            console.error("读取失败，请检查Rules！", err);
+        });
+
+        // 【保存】
+        $(this).on('input', function(){
+            clearTimeout(timer);
+            const content = this.value;
+            // 延长到 800ms，确保打字不卡顿
+            timer = setTimeout(() => {
+                db.ref('diary/' + pageId).set(content)
+                .then(() => console.log(pageId + " 自动保存成功 ✨"))
+                .catch(err => console.error("保存失败！", err));
+            }, 800);
+        });
+    });
+}
+
+// 4. 解决“写不了字”的关键：防止事件被拦截
+$(document).on('mousedown touchstart click', 'textarea', function(e){
+    e.stopPropagation(); // 阻止事件传给翻页组件
+    $(this).focus();    // 强制获取焦点
+});
+
+// 点击边缘翻页
+$(document).on('click', '#flipbook', function(e){
+    if(e.target.tagName === 'TEXTAREA') return;
+    
+    const book = $('#flipbook');
+    const offset = $(this).offset();
+    const x = e.pageX - offset.left;
+    const width = $(this).width();
+
+    if(x < width/4){
+        book.turn('previous');
+    } else if(x > (width/4)*3){
+        book.turn('next');
+    }
+});
+</script>
+</body>
+</html>
