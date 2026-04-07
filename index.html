@@ -3,38 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情侣云日记 💗（稳定保存版）</title>
+    <title>我们的秘密基地</title>
+
     <style>
-        body,html{ margin:0;height:100%;overflow:hidden; background:url('a1.jpg') center/cover; cursor:url('strawberry.cur'),auto; background-color: #fff5f7; }
-        #video{ position:fixed; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index: 100; }
-        #video video{ position:absolute; width:100%; height:100%; object-fit:cover; z-index:1; }
-        .btn{ width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.3); backdrop-filter:blur(10px); display:flex; justify-content:center; align-items:center; font-size:30px; color:#fff; cursor:pointer; z-index:2; border: 2px solid #fff; transition: 0.3s; }
-        .btn:hover{ transform: scale(1.1); background: rgba(255,255,255,0.5); }
-        #app{ display:none; height:100vh; justify-content:center; align-items:center; }
-        #flipbook{ width:800px; height:500px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
-        .page{ background:url('zhizhang.jpg') center/cover; background-color: #fff; }
-        /* 确保输入框在最上层且高度足够 */
-        textarea{ width:100% !important; height:100% !important; border:none; outline:none; padding:40px; font-size:18px; background:transparent; resize:none; z-index:1000; position:relative; line-height: 1.6; color: #444; box-sizing: border-box; display: block; }
-        .hard{ background:url('kawai.jpg') center/cover; background-color: #ffb6c1; color:#fff; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight: bold; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
+        /* --- 基础样式 --- */
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            overflow: hidden; 
+            background: #fff5f7; 
+            background-image: radial-gradient(circle at center, #ffffff 0%, #fff5f7 100%);
+            cursor: url('strawberry.cur'), auto; 
+            /* 全局幼圆 + 加粗 */
+            font-family: "YouYuan", "幼圆", "Microsoft YaHei", sans-serif;
+            font-weight: bold; 
+        }
+
+        /* ✨ 星星层 */
+        .stars { position: fixed; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); text-shadow: 0 0 10px #fff; }
+        }
+
+        /* 💗 爱心层 */
+        .hearts { position: fixed; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+        .heart { 
+            position: absolute; 
+            transform: rotate(45deg); 
+            animation: floatUp linear forwards; 
+            filter: drop-shadow(0 0 5px rgba(255,182,193,0.6));
+        }
+        .heart::before, .heart::after { 
+            content: ""; position: absolute; width: 100%; height: 100%; 
+            background: inherit; border-radius: 50%; 
+        }
+        .heart::before { top: -50%; left: 0; }
+        .heart::after { left: -50%; top: 0; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(45deg) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(-20vh) rotate(405deg) scale(1.2); opacity: 0; }
+        }
+
+        /* ✨ 点击爆开特效 */
+        .spark { 
+            position: absolute; width: 6px; height: 6px; background: #ffb6c1; 
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            animation: explode 0.8s ease-out forwards; 
+        }
+        @keyframes explode { 
+            from { transform: scale(1); opacity: 1; } 
+            to { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; } 
+        }
+
+        /* 🆕 倒计时样式 */
+        .countdown-container {
+            position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; text-align: center;
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
+            padding: 12px 30px; border-radius: 50px;
+            border: 2px solid #ffdae0; box-shadow: 0 8px 20px rgba(255, 182, 193, 0.3);
+            display: none; animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
+
+        .countdown-title { color: #ff6b81; font-size: 15px; font-weight: 900; margin-bottom: 5px; letter-spacing: 1px; }
+        .timer-flex { display: flex; gap: 12px; align-items: center; }
+        .time-unit { color: #ff4757; font-weight: 900; font-size: 24px; text-shadow: 1px 1px 0px white; }
+        .time-label { font-size: 13px; color: #ffa4b0; margin-left: 2px; font-weight: bold; }
+
+        /* 内容区域 */
+        #video { position: fixed; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 100; background: #000; }
+        #video video { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .btn { 
+            width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.2); 
+            backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; 
+            font-size: 35px; color: #fff; cursor: pointer; z-index: 2; border: 3px solid #fff;
+            transition: transform 0.3s;
+        }
+
+        #app { display: none; height: 100vh; justify-content: center; align-items: center; background: url('a1.jpg') center/cover; }
+        #flipbook { width: 800px; height: 500px; box-shadow: 0 30px 70px rgba(0,0,0,0.2); position: relative; z-index: 5; }
+        .page { background: url('zhizhang.jpg') center/cover; background-color: #fff; }
+        
+        /* 📖 文本框样式修改：字号变小 + 加粗 */
+        textarea { 
+            width: 85%; height: 80%; margin: 40px auto; border: none; outline: none; 
+            padding: 20px; 
+            font-family: "YouYuan", "幼圆", "Microsoft YaHei"; 
+            font-size: 18px; /* 字体缩小一点点 */
+            font-weight: bold; /* 字体加粗 */
+            color: #7c5a5a; background: transparent; resize: none; 
+            line-height: 1.8; display: block; border-bottom: 1px dashed #ffdae0;
+        }
+        
+        .hard { 
+            background: url('kawai.jpg') center/cover; 
+            background-color: #ffb6c1; 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 36px; color: #fff; font-weight: 900; 
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            font-family: "YouYuan", "幼圆"; 
+        }
     </style>
 </head>
+
 <body>
+
+<div id="countdown" class="countdown-container">
+    <div class="countdown-title">见到你的瑾宝</div>
+    <div class="timer-flex">
+        <div><span class="time-unit" id="days">00</span><span class="time-label">天</span></div>
+        <div><span class="time-unit" id="hours">00</span><span class="time-label">时</span></div>
+        <div><span class="time-unit" id="minutes">00</span><span class="time-label">分</span></div>
+        <div><span class="time-unit" id="seconds">00</span><span class="time-label">秒</span></div>
+    </div>
+</div>
+
+<div class="stars"></div>
+<div class="hearts"></div>
 
 <audio id="bg-music" loop><source src="my_music.mp3"></audio>
 
 <div id="video">
     <video autoplay muted loop><source src="my_video.mp4"></video>
-    <div class="btn" onclick="start()">💗</div>
+    <div class="btn" onclick="start()"> </div>
 </div>
 
 <div id="app">
     <div id="flipbook">
-        <div class="hard">我们的云日记 💗</div>
-        <div class="page"><textarea data-id="p1" placeholder="第一页：写下此刻的想法..."></textarea></div>
-        <div class="page"><textarea data-id="p2" placeholder="第二页：今天发生了什么？"></textarea></div>
-        <div class="page"><textarea data-id="p3" placeholder="第三页：想对TA说的话..."></textarea></div>
-        <div class="page"><textarea data-id="p4" placeholder="第四页：未来的约定..."></textarea></div>
-        <div class="hard">未完待续 ✨</div>
+        <div class="hard">我们的日记</div>
+        <div class="page"><textarea data-id="p1" placeholder="写下属于我们的故事..."></textarea></div>
+        <div class="page"><textarea data-id="p2"></textarea></div>
+        <div class="page"><textarea data-id="p3"></textarea></div>
+        <div class="page"><textarea data-id="p4"></textarea></div>
+        <div class="page"><textarea data-id="p5"></textarea></div>
+        <div class="page"><textarea data-id="p6"></textarea></div>
+        <div class="page"><textarea data-id="p7"></textarea></div>
+        <div class="page"><textarea data-id="p8"></textarea></div>
+        <div class="page"><textarea data-id="p9"></textarea></div>
+        <div class="page"><textarea data-id="p10"></textarea></div>
+        <div class="hard">未完待续... 🍓</div>
     </div>
 </div>
 
@@ -44,100 +155,137 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// 1. 配置（地址末尾补全斜杠）
+// --- Firebase 配置 (请确保这里的配置是正确的) ---
 const firebaseConfig = {
-    apiKey: "AIzaSyCo3wv79Mo47-rYcOuKe7ieAHnNbCwPMVU",
+    apiKey: "AIzaSy...",
     authDomain: "rijiben.firebaseapp.com",
-    databaseURL: "https://rijiben-default-rtdb.firebaseio.com/", 
-    projectId: "rijiben",
-    storageBucket: "rijiben.firebasestorage.app",
-    messagingSenderId: "958054260229",
-    appId: "1:958054260229:web:65c1691f0328f5c655066c"
+    databaseURL: "https://rijiben-default-rtdb.firebaseio.com/",
 };
-
-// 初始化校验
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// 2. 开启页面
-function start(){
-    const music = document.getElementById('bg-music');
-    music.play().catch(()=>{});
+// --- 倒计时逻辑 ---
+const targetDate = new Date("May 21, 2026 19:00:00").getTime(); 
 
-    document.getElementById('video').style.display='none';
-    document.getElementById('app').style.display='flex';
-
-    // 先展示界面，再初始化 turn.js
-    setTimeout(()=>{
-        $('#flipbook').turn({
-            width: 800,
-            height: 500,
-            autoCenter: true,
-            elevation: 50,
-            gradients: true
-        });
-        // 界面稳定后启动同步
-        initSync();
-    }, 300);
+function updateCountdown() {
+    const now = new Date().getTime();
+    const gap = targetDate - now;
+    if (gap <= 0) {
+        document.getElementById('countdown').innerHTML = "<div class='countdown-title'>🎉 终于见到你啦！ 🎉</div>";
+        return;
+    }
+    const d = Math.floor(gap / (1000 * 60 * 60 * 24));
+    const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((gap % (1000 * 60)) / 1000);
+    document.getElementById("days").innerText = d.toString().padStart(2, '0');
+    document.getElementById("hours").innerText = h.toString().padStart(2, '0');
+    document.getElementById("minutes").innerText = m.toString().padStart(2, '0');
+    document.getElementById("seconds").innerText = s.toString().padStart(2, '0');
 }
 
-// 3. 核心保存逻辑（增强版）
-function initSync(){
-    console.log("云端同步尝试启动...");
+// --- 启动函数 ---
+function start(){
+    document.getElementById('bg-music').play().catch(()=>{});
+    document.getElementById('video').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('countdown').style.display = 'block';
     
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    $('#flipbook').turn({
+        width: 800,
+        height: 500,
+        autoCenter: true,
+        duration: 1000
+    });
+
+    initSync();
+    initStars();
+    setInterval(createHeart, 600); 
+}
+
+// --- 装饰效果 ---
+
+function initStars() {
+    const starsContainer = document.querySelector('.stars');
+    for(let i=0; i<50; i++) {
+        const s = document.createElement('div');
+        s.innerHTML = '★';
+        s.style.position = 'absolute';
+        s.style.color = '#fff';
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.top = Math.random() * 100 + 'vh';
+        s.style.fontSize = (Math.random() * 12 + 8) + 'px';
+        s.style.opacity = Math.random();
+        s.style.animation = `twinkle ${2 + Math.random() * 3}s infinite alternate`;
+        starsContainer.appendChild(s);
+    }
+}
+
+function createHeart() {
+    const heartContainer = document.querySelector('.hearts');
+    const h = document.createElement('div');
+    const size = Math.random() * 15 + 10;
+    const colors = ['#ff9ecb', '#ffb6c1', '#ffc0cb', '#ff85a1', '#ff4757'];
+    
+    h.className = 'heart';
+    h.style.width = size + 'px';
+    h.style.height = size + 'px';
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.background = colors[Math.floor(Math.random() * colors.length)];
+    h.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    
+    heartContainer.appendChild(h);
+    setTimeout(() => h.remove(), 10000);
+}
+
+document.addEventListener('click', function(e){
+    for(let i=0; i<10; i++){
+        const s = document.createElement('div');
+        s.className = 'spark';
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 80 + 20;
+        s.style.setProperty('--x', Math.cos(angle) * dist + 'px');
+        s.style.setProperty('--y', Math.sin(angle) * dist + 'px');
+        s.style.left = e.pageX + 'px';
+        s.style.top = e.pageY + 'px';
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 800);
+    }
+});
+
+// --- 数据同步 ---
+function initSync(){
     $('textarea').each(function(){
         const el = this;
-        const pageId = $(this).attr('data-id'); // 改用 attr 获取更稳
-        let timer = null;
-
-        // 【拉取】
-        db.ref('diary/' + pageId).on('value', snap => {
-            const val = snap.val() || "";
-            // 如果没在输入，同步云端
-            if (document.activeElement !== el) {
-                el.value = val;
+        const id = $(this).attr('data-id');
+        let timer;
+        db.ref('diary/' + id).on('value', snap=>{
+            if(document.activeElement !== el){
+                el.value = snap.val() || "";
             }
-        }, err => {
-            console.error("读取失败，请检查Rules！", err);
         });
-
-        // 【保存】
         $(this).on('input', function(){
             clearTimeout(timer);
-            const content = this.value;
-            // 延长到 800ms，确保打字不卡顿
-            timer = setTimeout(() => {
-                db.ref('diary/' + pageId).set(content)
-                .then(() => console.log(pageId + " 自动保存成功 ✨"))
-                .catch(err => console.error("保存失败！", err));
-            }, 800);
+            const val = this.value;
+            timer = setTimeout(()=>{
+                db.ref('diary/' + id).set(val);
+            }, 500);
         });
     });
 }
 
-// 4. 解决“写不了字”的关键：防止事件被拦截
-$(document).on('mousedown touchstart click', 'textarea', function(e){
-    e.stopPropagation(); // 阻止事件传给翻页组件
-    $(this).focus();    // 强制获取焦点
-});
-
-// 点击边缘翻页
-$(document).on('click', '#flipbook', function(e){
+// 翻页控制
+$(document).on('mousedown','textarea',e=>e.stopPropagation());
+$(document).on('click','#flipbook',function(e){
     if(e.target.tagName === 'TEXTAREA') return;
-    
-    const book = $('#flipbook');
-    const offset = $(this).offset();
-    const x = e.pageX - offset.left;
-    const width = $(this).width();
-
-    if(x < width/4){
-        book.turn('previous');
-    } else if(x > (width/4)*3){
-        book.turn('next');
-    }
+    const x = e.pageX - $(this).offset().left;
+    if(x < $(this).width()/2){ $('#flipbook').turn('previous'); }
+    else{ $('#flipbook').turn('next'); }
 });
 </script>
+
 </body>
 </html>
