@@ -129,7 +129,7 @@
 
 <div id="video">
     <video autoplay muted loop><source src="my_video.mp4"></video>
-    <div class="btn" onclick="start()"> </div>
+    <div class="btn" onclick="start()"></div>
 </div>
 
 <div id="app">
@@ -157,9 +157,13 @@
 <script>
 // --- Firebase 配置 (请确保这里的配置是正确的) ---
 const firebaseConfig = {
-    apiKey: "AIzaSy...",
-    authDomain: "rijiben.firebaseapp.com",
-    databaseURL: "https://rijiben-default-rtdb.firebaseio.com/",
+   apiKey: "AIzaSyBgNcYToqEte2cO9MAMm1WwfepG8FzTwk",
+    authDomain: "diary-love.firebaseapp.com",
+    databaseURL: "https://diary-love-default-rtdb.firebaseio.com/",
+    projectId: "diary-love",
+    storageBucket: "diary-love.firebasestorage.app",
+    messagingSenderId: "133217739741",
+    appId: "1:133217739741:web:40788b0426991d11e60c34"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
