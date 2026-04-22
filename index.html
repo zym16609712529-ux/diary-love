@@ -169,13 +169,13 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // --- 倒计时逻辑 ---
-const targetDate = new Date("May 21, 2026 19:00:00").getTime(); 
+const targetDate = new Date("April 30, 2026 20:00:00").getTime(); 
 
 function updateCountdown() {
     const now = new Date().getTime();
     const gap = targetDate - now;
     if (gap <= 0) {
-        document.getElementById('countdown').innerHTML = "<div class='countdown-title'>🎉 终于见到你啦！ 🎉</div>";
+        document.getElementById('countdown').innerHTML = "<div class='countdown-title'>🎉见面啦！我爱你！  🎉</div>";
         return;
     }
     const d = Math.floor(gap / (1000 * 60 * 60 * 24));
