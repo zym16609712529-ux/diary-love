@@ -198,19 +198,24 @@ function start(){
     setInterval(updateCountdown, 1000);
     updateCountdown();
 
+     try {
     $('#flipbook').turn({
         width: 800,
         height: 500,
         autoCenter: true,
         duration: 1000
     });
+} catch (e) {
+    console.log(e);
+}
 
-   setTimeout(() => {
+setTimeout(() => {
     if (!window.syncStarted) {
         initSync();
         window.syncStarted = true;
+        console.log("Firebase 同步已启动");
     }
-  }, 500);
+}, 500);
 
     initStars();
     setInterval(createHeart, 600);
