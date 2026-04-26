@@ -273,21 +273,23 @@ function initSync(){
         const el = this;
         const id = $(this).attr('data-id');
         let timer;
-        db.ref('diary/' + id).on('value', snap=>{
-            if(document.activeElement !== el){
-                el.value = snap.val() || "";
-            }
+
+        // 先主动读取一次
+        db.ref('diary/' + id).get().then((snap) => {
+            el.value = snap.val() || "";
         });
+
+        // 自动保存
         $(this).on('input', function(){
             clearTimeout(timer);
             const val = this.value;
-            timer = setTimeout(()=>{
+
+            timer = setTimeout(() => {
                 db.ref('diary/' + id).set(val);
             }, 500);
         });
     });
 }
-
 // 翻页控制
 $(document).on('mousedown','textarea',e=>e.stopPropagation());
 $(document).on('click','#flipbook',function(e){
