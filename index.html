@@ -194,7 +194,7 @@ function start(){
     document.getElementById('video').style.display='none';
     document.getElementById('app').style.display='flex';
     document.getElementById('countdown').style.display = 'block';
-    
+
     setInterval(updateCountdown, 1000);
     updateCountdown();
 
@@ -205,11 +205,13 @@ function start(){
         duration: 1000
     });
 
-    initSync();
-    initStars();
-    setInterval(createHeart, 600); 
-}
+    setTimeout(() => {
+        initSync();
+    }, 500);
 
+    initStars();
+    setInterval(createHeart, 600);
+}
 // --- 装饰效果 ---
 
 function initStars() {
@@ -260,9 +262,7 @@ document.addEventListener('click', function(e){
     }
 });
 
-window.onload = function () {
-    initSync();
-};
+
 
 // --- 数据同步 ---
 function initSync(){
