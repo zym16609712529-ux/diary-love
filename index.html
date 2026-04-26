@@ -205,9 +205,12 @@ function start(){
         duration: 1000
     });
 
-    setTimeout(() => {
+   setTimeout(() => {
+    if (!window.syncStarted) {
         initSync();
-    }, 500);
+        window.syncStarted = true;
+    }
+  }, 500);
 
     initStars();
     setInterval(createHeart, 600);
